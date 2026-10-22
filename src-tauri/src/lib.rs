@@ -14,6 +14,12 @@ struct AppState {
     cancelled: Arc<AtomicBool>,
     stream_filter: Mutex<core::Filter>,
 }
+struct WorkspaceWriteGuard(Arc<AtomicBool>);
+impl Drop for WorkspaceWriteGuard {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
+}
 #[tauri::command]
 async fn get_stats(state: State<'_, AppState>) -> Result<core::Stats, String> {
     let db = state.db.clone();
@@ -59,20 +65,14 @@ async fn import_files(
     paths: Vec<String>,
 ) -> Result<core::ImportReport, String> {
     if state.importing.swap(true, Ordering::SeqCst) {
-        return Err("正在导入，请等待当前任务完成".into());
+        return Err("工作区正在更新，请稍后重试".into());
     }
     state.cancelled.store(false, Ordering::SeqCst);
     let db = state.db.clone();
     let importing = state.importing.clone();
     let cancelled = state.cancelled.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        struct Reset(Arc<AtomicBool>);
-        impl Drop for Reset {
-            fn drop(&mut self) {
-                self.0.store(false, Ordering::SeqCst);
-            }
-        }
-        let _reset = Reset(importing);
+        let _reset = WorkspaceWriteGuard(importing);
         let result = core::import(&db, paths, &cancelled, |p| {
             let _ = app.emit("import-progress", p);
         });
@@ -81,6 +81,34 @@ async fn import_files(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+#[tauri::command]
+async fn unload_file(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    file_id: i64,
+) -> Result<u64, String> {
+    if state.importing.swap(true, Ordering::SeqCst) {
+        return Err("工作区正在更新，请等待导入或卸载完成".into());
+    }
+    let db = state.db.clone();
+    let guard = WorkspaceWriteGuard(state.importing.clone());
+    let (result, _guard) = tauri::async_runtime::spawn_blocking(move || {
+        let result = core::unload_file(&db, file_id);
+        (result, guard)
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    let removed = result?;
+    {
+        let mut filter = state.stream_filter.lock().map_err(|e| e.to_string())?;
+        if filter.file_id == Some(file_id) {
+            filter.file_id = None;
+        }
+        filter.page = 0;
+    }
+    let _ = app.emit("workspace-changed", format!("unload:{file_id}"));
+    Ok(removed)
 }
 #[tauri::command]
 fn cancel_import(state: State<'_, AppState>) {
@@ -195,6 +223,7 @@ pub fn run() {
             get_event,
             set_bookmark,
             import_files,
+            unload_file,
             open_event_window,
             get_stream_filter,
             focus_main,

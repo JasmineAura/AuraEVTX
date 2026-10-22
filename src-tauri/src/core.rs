@@ -308,6 +308,24 @@ pub fn bookmark(path: &Path, id: i64, enabled: bool) -> Result<()> {
     Ok(())
 }
 
+/// Remove an indexed source atomically. Never open or modify the source EVTX.
+pub fn unload_file(path: &Path, file_id: i64) -> Result<u64> {
+    let mut conn = connect(path)?;
+    let tx = conn.transaction().map_err(err)?;
+    let removed = tx
+        .execute("DELETE FROM events WHERE file_id=?", [file_id])
+        .map_err(err)?;
+    if tx
+        .execute("DELETE FROM files WHERE id=?", [file_id])
+        .map_err(err)?
+        == 0
+    {
+        return Err("该日志已卸载或不存在".into());
+    }
+    tx.commit().map_err(err)?;
+    Ok(removed as u64)
+}
+
 pub struct Parsed {
     pub record_id: u64,
     pub event_id: u32,
@@ -747,6 +765,70 @@ pub fn export(path: &Path, filter: &Filter, output: &Path) -> Result<u64> {
 mod tests {
     use super::*;
     #[test]
+    fn unloading_source_removes_only_its_events_and_allows_reimport() {
+        let folder = std::env::temp_dir().join(format!(
+            "aura-unload-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&folder).unwrap();
+        let source = folder.join("evidence.evtx");
+        std::fs::write(&source, b"source must remain unchanged").unwrap();
+        let db = folder.join("workspace.db");
+        initialize(&db).unwrap();
+        {
+            let conn = connect(&db).unwrap();
+            conn.execute("INSERT INTO files(id,name,path,hash,count) VALUES(1,'evidence.evtx',?,'hash-one',2)", [source.to_string_lossy().as_ref()]).unwrap();
+            conn.execute("INSERT INTO files(id,name,path,hash,count) VALUES(2,'other.evtx','other.evtx','hash-two',1)", []).unwrap();
+            for (id, file_id, marked) in [(1, 1, 1), (2, 1, 0), (3, 2, 1)] {
+                conn.execute("INSERT INTO events(id,file_id,record_id,event_id,provider,channel,computer,time,level,operation,category,summary,fields,xml,bookmarked) VALUES(?,?,?,1,'Provider','Custom','host','2026-10-22T00:00:00Z',4,'operation','其他','summary','{}','<Event/>',?)", params![id,file_id,id,marked]).unwrap();
+            }
+        }
+        assert_eq!(unload_file(&db, 1).unwrap(), 2);
+        let remaining = stats(&db).unwrap();
+        assert_eq!(remaining.total, 1);
+        assert_eq!(remaining.bookmarks, 1);
+        assert_eq!(remaining.files.len(), 1);
+        assert_eq!(remaining.files[0].id, 2);
+        assert_eq!(
+            query(
+                &db,
+                &Filter {
+                    page_size: 50,
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .rows[0]
+                .file_id,
+            2
+        );
+        assert!(detail(&db, 1).is_err());
+        assert!(unload_file(&db, 1).is_err());
+        assert_eq!(stats(&db).unwrap().total, 1);
+        assert_eq!(
+            std::fs::read(&source).unwrap(),
+            b"source must remain unchanged"
+        );
+        // Deleting the source releases its hash, so the normal importer can insert it again.
+        {
+            let conn = connect(&db).unwrap();
+            conn.execute("INSERT INTO files(id,name,path,hash) VALUES(1,'evidence.evtx','evidence.evtx','hash-one')",[]).unwrap();
+        }
+        assert_eq!(unload_file(&db, 1).unwrap(), 0);
+        assert_eq!(unload_file(&db, 2).unwrap(), 1);
+        let empty = stats(&db).unwrap();
+        assert_eq!(empty.total, 0);
+        assert_eq!(empty.bookmarks, 0);
+        assert!(empty.files.is_empty());
+        std::fs::remove_file(&db).unwrap();
+        std::fs::remove_file(&source).unwrap();
+        std::fs::remove_dir(&folder).unwrap();
+    }
+    #[test]
     #[ignore = "Download upstream fixtures with scripts/verify-generic.ps1"]
     fn generic_evtx_matches_windows_native_counts() {
         let dir = std::env::var("AURA_EVTX_FIXTURES").expect("fixture directory");
@@ -875,6 +957,21 @@ mod tests {
             .total,
             0
         );
+        let original = std::fs::read(&sample).unwrap();
+        assert_eq!(unload_file(&path, s.files[0].id).unwrap(), 169);
+        assert_eq!(stats(&path).unwrap().total, 0);
+        assert_eq!(stats(&path).unwrap().bookmarks, 0);
+        let reloaded = import(
+            &path,
+            vec![sample.to_string_lossy().into()],
+            &cancel,
+            |_| {},
+        )
+        .unwrap();
+        assert_eq!(reloaded.imported, 1);
+        assert_eq!(reloaded.skipped, 0);
+        assert_eq!(reloaded.records, 169);
+        assert_eq!(std::fs::read(&sample).unwrap(), original);
         let _ = std::fs::remove_file(dest);
         let _ = std::fs::remove_file(path);
     }

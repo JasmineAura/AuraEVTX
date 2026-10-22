@@ -1,4 +1,81 @@
 /* Astrolabe rims: quiet moving geometry, outside the reading surface. */
+.source-entry {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+.source-entry .source-item {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+}
+.source-entry .source-item > span {
+  min-width: 0;
+}
+.source-unload {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+}
+.source-unload:hover {
+  color: var(--accent);
+  background: rgba(var(--primary-rgb), 0.12);
+}
+.source-file-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.unload-file-action {
+  color: var(--muted);
+}
+.unload-dialog {
+  width: min(460px, calc(100vw - 48px));
+  margin: auto;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 24px 90px #0005;
+}
+.unload-dialog::backdrop {
+  background: #060a12a6;
+  backdrop-filter: blur(5px);
+}
+.unload-dialog h2 {
+  margin: 20px 0 18px;
+  font-size: 24px;
+}
+.unload-filename {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.unload-dialog p {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--muted);
+  margin: 16px 0 25px;
+}
+.unload-dialog-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+}
+.unload-dialog-actions button {
+  min-width: 85px;
+  justify-content: center;
+}
 .orbit-frame {
   position: absolute;
   inset: 0;

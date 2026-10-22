@@ -31,6 +31,17 @@ try {
     Invoke-Control (Wait-Control $stream '返回主窗口')
     $null = Wait-Control $main '事件时间分布'
     $null = Wait-Control $stream '搜索事件'
+    # If this workspace has sources, verify the unload dialog without removing user data.
+    $buttonCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Button)
+    foreach($button in $main.FindAll([System.Windows.Automation.TreeScope]::Descendants,$buttonCondition)) {
+        if($button.Current.Name.StartsWith('卸载 ')) {
+            Invoke-Control $button
+            $null = Wait-Control $main '确认卸载'
+            Invoke-Control (Wait-Control $main '取消')
+            'Native unload confirmation opened and cancelled; no source was removed.'
+            break
+        }
+    }
     'Native verification passed: independent maximized window and main-window navigation remain isolated.'
 } finally {
     # Only terminate the exact process launched by this script.

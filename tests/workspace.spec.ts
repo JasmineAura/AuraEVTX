@@ -1,6 +1,93 @@
 import { test, expect } from "@playwright/test";
 import { buildRecords } from "./support/records.mjs";
 
+test("unload sources with confirmation, clear stale detail and sync both windows", async ({
+  page,
+  context,
+}) => {
+  const first = buildRecords();
+  const records = [
+    ...first,
+    ...first.map((e) => ({
+      ...e,
+      id: e.id + 10000,
+      file_id: 2,
+      source: "Other.evtx",
+    })),
+  ];
+  await context.addInitScript((records) => {
+    (window as any).__AURA_TEST_RECORDS__ = records;
+  }, records);
+  await context.route("**/src/api.ts*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: 'export {api,native,streamWindow} from "/tests/support/browser-api.mjs";',
+    }),
+  );
+  await page.goto("/");
+  await page.evaluate(
+    (ids) => localStorage.setItem("aura-test-bookmarks", JSON.stringify(ids)),
+    [first[0].id, first[0].id + 10000],
+  );
+  await expect(page.locator(".source-entry")).toHaveCount(2);
+  await page
+    .getByRole("button", { name: "卸载 Sysmon-Operational.evtx", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("原始 EVTX 文件会保留");
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(page.locator(".source-entry")).toHaveCount(2);
+  const popup = page.waitForEvent("popup");
+  await page
+    .locator(".source-item")
+    .filter({ hasText: "Sysmon-Operational" })
+    .click();
+  const stream = await popup;
+  await expect(stream.locator("tbody tr")).toHaveCount(50);
+  await expect(stream.getByRole("combobox", { name: "日志来源" })).toHaveValue(
+    "1",
+  );
+  await stream.locator("tbody tr").first().click();
+  await expect(stream.locator(".detail-panel")).toBeVisible();
+  await stream
+    .getByRole("button", { name: "卸载当前日志", exact: true })
+    .click();
+  await stream.getByRole("button", { name: "确认卸载", exact: true }).click();
+  await expect(stream.getByRole("dialog")).toHaveCount(0);
+  await expect(stream.locator(".detail-panel")).not.toBeVisible();
+  await expect(stream.locator(".explorer-layout")).not.toHaveClass(
+    /has-detail/,
+  );
+  await expect(stream.getByRole("combobox", { name: "日志来源" })).toHaveValue(
+    "",
+  );
+  await expect(page.locator(".source-entry")).toHaveCount(1);
+  await expect(page.locator(".metric-value").first()).toHaveText("169EVENTS");
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("aura-test-bookmarks")!),
+    ),
+  ).toEqual([first[0].id + 10000]);
+  await expect(stream.locator(".pagination")).toContainText("169");
+  await page.reload();
+  await expect(page.locator(".source-entry")).toHaveCount(1);
+  await page.getByRole("button", { name: "卸载日志", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("button", { name: "卸载日志", exact: true }).click();
+  await page.getByRole("button", { name: "确认卸载", exact: true }).click();
+  await expect(page.locator(".source-entry")).toHaveCount(0);
+  await expect(page.locator(".metric-value").first()).toHaveText("0EVENTS");
+  await expect(stream.locator("tbody tr")).toHaveCount(0);
+  await expect(
+    stream.getByRole("combobox", { name: "日志来源" }).locator("option"),
+  ).toHaveCount(1);
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("aura-test-bookmarks")!),
+    ),
+  ).toEqual([]);
+});
+
 test("content rims contain long lists at normal and minimum window sizes", async ({
   page,
   context,

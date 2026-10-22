@@ -36,6 +36,7 @@ import {
   Sun,
   Terminal,
   X,
+  LogOut,
 } from "lucide-react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
@@ -52,9 +53,11 @@ import type {
   Page,
   Progress,
   Stats,
+  SourceFile,
 } from "./types";
 import catalogData from "../shared/catalog.json";
 import OrbitFrame, { DialRim } from "./components/OrbitFrame";
+import UnloadDialog from "./components/UnloadDialog";
 import AstralClock, {
   ClockReadout,
   OrbitMark,
@@ -174,8 +177,12 @@ export default function App() {
   const [onlyPresent, setOnlyPresent] = useState(false);
   const [fieldSearch, setFieldSearch] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [unloadTarget, setUnloadTarget] = useState<SourceFile | null>(null);
+  const [unloading, setUnloading] = useState(false);
+  const unloadGuard = useRef(false);
   const importGuard = useRef(false);
   const detailSequence = useRef(0);
+  const statsSequence = useRef(0);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -203,8 +210,57 @@ export default function App() {
     [],
   );
   const refresh = useCallback(async () => {
-    setStats(await api<Stats>("get_stats"));
+    const sequence = ++statsSequence.current;
+    const next = await api<Stats>("get_stats");
+    if (sequence !== statsSequence.current) return;
+    setStats(next);
+    setFilter((current) =>
+      current.file_id !== null &&
+      !next.files.some((f) => f.id === current.file_id)
+        ? { ...current, file_id: null, page: 0 }
+        : current,
+    );
+    setSelected((current) =>
+      current && !next.files.some((f) => f.id === current.file_id)
+        ? null
+        : current,
+    );
   }, []);
+  const applyUnloaded = useCallback((fileId: number) => {
+    ++statsSequence.current;
+    ++detailSequence.current;
+    setSelected((current) => (current?.file_id === fileId ? null : current));
+    setPage({ rows: [], total: 0 });
+    setFilter((current) => ({
+      ...current,
+      file_id: current.file_id === fileId ? null : current.file_id,
+      page: 0,
+    }));
+    setUnloadTarget((current) => (current?.id === fileId ? null : current));
+  }, []);
+  const unloadFile = useCallback(async () => {
+    if (!unloadTarget || unloadGuard.current) return;
+    unloadGuard.current = true;
+    setUnloading(true);
+    setError("");
+    const target = unloadTarget;
+    try {
+      await api<number>("unload_file", { fileId: target.id });
+      applyUnloaded(target.id);
+      if (!native)
+        localStorage.setItem(
+          "aura-workspace-unloaded",
+          JSON.stringify({ id: target.id, nonce: Date.now() }),
+        );
+      await refresh();
+      setNotice(`已卸载 ${target.name}，原始文件已保留`);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      unloadGuard.current = false;
+      setUnloading(false);
+    }
+  }, [unloadTarget, applyUnloaded, refresh]);
   const openStream = useCallback(async (nextFilter: Filter) => {
     try {
       if (native) await api("open_event_window", { filter: nextFilter });
@@ -231,10 +287,18 @@ export default function App() {
       if (event.key === "aura-mode") setMode(event.newValue || "dark");
       if (event.key === "aura-motion") setMotion(event.newValue !== "off");
       if (event.key === "aura-time") setUtc(event.newValue !== "local");
+      if (
+        !native &&
+        event.key === "aura-workspace-unloaded" &&
+        event.newValue
+      ) {
+        applyUnloaded(JSON.parse(event.newValue).id);
+        void refresh().catch((e) => setError(String(e)));
+      }
     };
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
-  }, []);
+  }, [applyUnloaded, refresh]);
   useEffect(() => {
     const apply = (next: Filter) => {
       setView(next.bookmarked ? "bookmarks" : "events");
@@ -274,6 +338,8 @@ export default function App() {
         .catch((e) => setError(String(e)));
     }
     listen<string>("workspace-changed", (e) => {
+      if (e.payload.startsWith("unload:"))
+        applyUnloaded(Number(e.payload.slice(7)));
       if (e.payload === "import") {
         setImporting(false);
         setProgress(null);
@@ -286,7 +352,7 @@ export default function App() {
       disposed = true;
       cleanups.forEach((cleanup) => cleanup());
     };
-  }, [refresh]);
+  }, [refresh, applyUnloaded]);
   useEffect(() => {
     refresh().catch((e) => setError(String(e)));
   }, [refresh]);
@@ -641,22 +707,32 @@ export default function App() {
         </button>
         <div className="source-list">
           {stats.files.map((f) => (
-            <button
-              title={`${f.path}\nSHA-256: ${f.hash || "未提供"}`}
-              key={f.id}
-              className={`source-item ${filter.file_id === f.id ? "chosen" : ""}`}
-              onClick={() => pivot({ file_id: f.id })}
-            >
-              <FileCode2 size={15} />
-              <span>
-                {f.name.replace(/\.evtx$/i, "")}
-                <small>
-                  {fmt(f.count)} EVENTS{" "}
-                  {f.errors > 0 ? `· ${f.errors} ERRORS` : ""}
-                </small>
-              </span>
-              <span className="source-dot" />
-            </button>
+            <div className="source-entry" key={f.id}>
+              <button
+                title={`${f.path}\nSHA-256: ${f.hash || "未提供"}`}
+                className={`source-item ${filter.file_id === f.id ? "chosen" : ""}`}
+                onClick={() => pivot({ file_id: f.id })}
+              >
+                <FileCode2 size={15} />
+                <span>
+                  {f.name.replace(/\.evtx$/i, "")}
+                  <small>
+                    {fmt(f.count)} EVENTS{" "}
+                    {f.errors > 0 ? `· ${f.errors} ERRORS` : ""}
+                  </small>
+                </span>
+                <span className="source-dot" />
+              </button>
+              <button
+                className="source-unload"
+                aria-label={`卸载 ${f.name}`}
+                title="卸载日志，保留原始文件"
+                disabled={importing || unloading}
+                onClick={() => setUnloadTarget(f)}
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           ))}
           {!stats.files.length && (
             <div className="no-source">
@@ -688,7 +764,7 @@ export default function App() {
             onClick={() => navigate("settings")}
           >
             <Settings2 size={17} />
-            外观与设置<span>v0.3.1</span>
+            外观与设置<span>v0.3.2</span>
           </button>
         </div>
       </aside>
@@ -954,6 +1030,21 @@ export default function App() {
                     )}
                   </div>
                   <div>
+                    {streamWindow && filter.file_id !== null && (
+                      <button
+                        className="small-button"
+                        disabled={importing || unloading}
+                        onClick={() =>
+                          setUnloadTarget(
+                            stats.files.find((f) => f.id === filter.file_id) ??
+                              null,
+                          )
+                        }
+                      >
+                        <LogOut size={14} />
+                        卸载当前日志
+                      </button>
+                    )}
                     <button
                       className={`small-button ${advanced ? "selected" : ""}`}
                       onClick={() => setAdvanced(!advanced)}
@@ -1762,12 +1853,22 @@ export default function App() {
                         <span>{f.path}</span>
                         <small>SHA-256</small>
                         <code>{f.hash || "未提供哈希"}</code>
-                        <button
-                          className="text-button"
-                          onClick={() => pivot({ file_id: f.id })}
-                        >
-                          浏览此文件 <ArrowRight size={13} />
-                        </button>
+                        <div className="source-file-actions">
+                          <button
+                            className="text-button"
+                            onClick={() => pivot({ file_id: f.id })}
+                          >
+                            浏览此文件 <ArrowRight size={13} />
+                          </button>
+                          <button
+                            className="text-button unload-file-action"
+                            disabled={importing || unloading}
+                            onClick={() => setUnloadTarget(f)}
+                          >
+                            <LogOut size={13} />
+                            卸载日志
+                          </button>
+                        </div>
                       </div>
                     </article>
                   ))}
@@ -1883,7 +1984,7 @@ export default function App() {
                 <div className="about-mark">
                   A<span>/</span>
                 </div>
-                <span className="eyebrow">AURA EVTX / 0.3.1</span>
+                <span className="eyebrow">AURA EVTX / 0.3.2</span>
                 <h3>
                   每一条日志，
                   <br />
@@ -1948,6 +2049,15 @@ export default function App() {
             <span>DROP YOUR EVIDENCE HERE</span>
           </div>
         </div>
+      )}
+      {unloadTarget && (
+        <UnloadDialog
+          file={unloadTarget}
+          busy={unloading}
+          error={error}
+          onClose={() => setUnloadTarget(null)}
+          onConfirm={() => void unloadFile()}
+        />
       )}
       {notice && (
         <div className="toast" role="status">
