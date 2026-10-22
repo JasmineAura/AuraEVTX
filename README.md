@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/overview.png" alt="AuraEVTX 软件主界面封面：调查概览、事件统计与日志分析工作台" width="100%" />
+
 # AuraEVTX
 
 **让每一条 Windows 事件，都成为看得懂的线索。**
