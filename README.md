@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/overview.png" alt="AuraEVTX 软件主界面封面：调查概览、事件统计与日志分析工作台" width="100%" />
+<img src="docs/assets/cover.png" alt="AuraEVTX 功能总览：通用 EVTX 导入、独立事件窗口、中文事件图鉴、全文搜索、原始 XML、证据收藏与导出、本地索引和多主题" width="100%" />
 
 # AuraEVTX
 
