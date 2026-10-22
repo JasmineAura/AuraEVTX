@@ -83,7 +83,7 @@ if (existing.status === 200) {
     body: JSON.stringify({
       tag_name: tag,
       target_commitish: sha,
-      name: `AuraEVTX ${tag} · 独立事件流`,
+      name: `AuraEVTX ${tag} · 事件观测台`,
       body: readFileSync(
         new URL(`../docs/releases/${tag}.md`, import.meta.url),
         "utf8",

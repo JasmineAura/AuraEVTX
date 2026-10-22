@@ -18,7 +18,7 @@ test("independent stream window, full-width list, filters, detail and synchroniz
   context.on("page", (p) => p.on("pageerror", (e) => errors.push(e.message)));
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "CASE OVERVIEW", exact: true }),
+    page.getByRole("heading", { name: "Event Observatory", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("载入真实样例")).toHaveCount(0);
   const popupPromise = page.waitForEvent("popup");
@@ -95,9 +95,69 @@ test("production browser contains no bundled sample or demo transport", async ({
   await expect(
     page.locator(".metric").first().locator(".metric-value"),
   ).toHaveText("0EVENTS");
+  await expect(
+    page.getByRole("button", { name: "日志起点", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "日志终点", exact: true }),
+  ).toBeDisabled();
   await expect(page.getByText(/样例|example/i)).toHaveCount(0);
   await page.getByRole("button", { name: "导入 EVTX", exact: false }).click();
   await expect(page.getByRole("alert")).toContainText(
     "文件导入需要 AuraEVTX 桌面应用",
+  );
+});
+
+test("astral clock advances, pins evidence times, and converts the timezone", async ({
+  page,
+  context,
+}) => {
+  await context.addInitScript((records) => {
+    (window as any).__AURA_TEST_RECORDS__ = records;
+  }, buildRecords());
+  await context.route("**/src/api.ts*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: 'export {api,native,streamWindow} from "/tests/support/browser-api.mjs";',
+    }),
+  );
+  await page.clock.install({ time: new Date("2026-10-22T04:15:30Z") });
+  await page.clock.pauseAt(new Date("2026-10-22T04:16:00Z"));
+  await page.goto("/");
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "04:16:00",
+  );
+  await expect(page.getByTestId("clock-hour-hand")).toHaveAttribute(
+    "data-angle",
+    "128",
+  );
+  await page.clock.runFor(1000);
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "04:16:01",
+  );
+  await page.getByRole("button", { name: "日志起点", exact: true }).click();
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "02:10:00",
+  );
+  await page.clock.runFor(5000);
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "02:10:00",
+  );
+  await page.getByRole("button", { name: "日志终点", exact: true }).click();
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "02:11:24",
+  );
+  await page.getByRole("button", { name: "切换时钟时区", exact: true }).click();
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "10:11:24",
+  );
+  await expect(page.getByTestId("live-clock-digital")).toHaveText("12:16:06");
+  await page.getByRole("button", { name: "实时", exact: true }).click();
+  await expect(page.getByTestId("observatory-clock-digital")).toHaveText(
+    "12:16:06",
+  );
+  await page.setViewportSize({ width: 1060, height: 720 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    1060,
   );
 });

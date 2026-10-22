@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="docs/assets/cover.png" alt="AuraEVTX：深蓝简洁封面与主界面元素" width="100%" />
+<img src="docs/assets/cover.png" alt="AuraEVTX：星图与天文钟，Windows 事件观测台" width="100%" />
 
 # AuraEVTX
 
 **让每一条 Windows 事件，都成为看得懂的线索。**
 
-本地 EVTX 日志调查工作台 · Rust 解析 · 独立事件窗口 · 中文事件图鉴
+本地 Windows 事件观测台 · Rust 解析 · 独立事件窗口 · 中文事件图鉴
 
 [![Release](https://img.shields.io/github/v/release/JasmineAura/AuraEVTX?color=315bd7&style=flat-square)](https://github.com/JasmineAura/AuraEVTX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-f4d15c?style=flat-square&labelColor=182540)](https://github.com/JasmineAura/AuraEVTX/releases/latest/download/AuraEVTX-windows-x64.zip)
@@ -34,7 +34,9 @@ AuraEVTX 面向应急响应、日志排查与取证学习。导入 `.evtx` 文�
 
 ### 调查概览
 
-按主机、提供者、行为类别和时间分布组织日志。文件记录保留 SHA-256，支持从概览直接跳到独立事件窗口。
+采用星图与天文钟灵感的开放布局，用留白、细刻度和低饱和蓝金配色组织内容。按主机、提供者、行为类别和时间分布查看日志；文件记录保留 SHA-256，可从概览直接跳到独立事件窗口。
+
+天文钟每秒走动，可在实时、日志起点和日志终点之间切换；点击时区切换 UTC / 本地时间，方便对照证据时间。
 
 ![调查概览：时间分布、行为分类和高频事件](docs/assets/overview.png)
 
@@ -58,7 +60,7 @@ AuraEVTX 面向应急响应、日志排查与取证学习。导入 `.evtx` 文�
 | 证据收藏 | 收藏关键事件，跨窗口同步，应用重启后保留 |
 | CSV 导出 | 导出全部筛选结果，包含时间、操作、来源与字段 JSON；UTF-8 BOM 便于 Excel 打开 |
 | 本地索引 | SQLite WAL、后台解析、SHA-256 去重、导入进度、取消和错误汇总 |
-| 时间与外观 | UTC / 本地时间、三套主题、明暗切换、持续动效和减少动态选项 |
+| 时间与外观 | 实时时钟、日志起止时间定位、UTC / 本地时间、三套主题、明暗切换、星轨动效和减少动态选项 |
 
 **通用导入不等于拥有所有提供者的中文释义。** 未收录事件仍完整入库，并标注“未收录释义”，不会借用其他提供者的同号事件解释。日志级别是诊断级别，不等于威胁等级。当前版本用于浏览和人工调查，尚未集成 Sigma 自动检测。
 
@@ -127,7 +129,7 @@ npm test
 npm run test:rust
 ```
 
-前端测试使用 Edge，并在测试浏览器中注入构造数据；生产代码不包含测试传输层。覆盖独立窗口、全宽布局、分页、检索、详情、收藏、图鉴、跨窗口主题同步和最小窗口尺寸。
+前端测试使用 Edge，并在测试浏览器中注入构造数据；生产代码不包含测试传输层。覆盖独立窗口、全宽布局、分页、检索、详情、收藏、图鉴、跨窗口主题同步、时钟走时、证据时间定位、时区换算和最小窗口尺寸。
 
 在有图形桌面的 Windows 上，构建打包后还可执行 `./scripts/verify-native-window.ps1`：直接操作本次启动的原生窗口，检查最大化及跨窗口导航隔离，结束后关闭它自己启动的进程。
 

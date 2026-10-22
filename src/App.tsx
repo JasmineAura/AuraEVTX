@@ -54,6 +54,11 @@ import type {
   Stats,
 } from "./types";
 import catalogData from "../shared/catalog.json";
+import AstralClock, {
+  ClockReadout,
+  OrbitMark,
+  StarMap,
+} from "./components/AstralClock";
 const catalog: Definition[] = catalogData;
 type View = "events" | "overview" | "catalog" | "bookmarks" | "settings";
 const themes = [
@@ -83,12 +88,12 @@ const titles: Record<View, [string, string, string]> = {
     "从每一条记录，接近事件的全貌。",
   ],
   overview: [
-    "CASE OVERVIEW",
-    "让线索，构成全景。",
-    "日志规模、事件分布与时间，一览即知。",
+    "Event Observatory",
+    "事件观测台",
+    "以时间为坐标，追踪每一条线索。",
   ],
   catalog: [
-    "EVENT ATLAS",
+    "Event Atlas",
     "读懂每一个事件 ID。",
     "按提供者与通道区分释义，让分析有据可依。",
   ],
@@ -98,7 +103,7 @@ const titles: Record<View, [string, string, string]> = {
     "收藏的重要事件，始终可追溯至原始记录。",
   ],
   settings: [
-    "PERSONALIZE",
+    "Your Constellation",
     "你的工作台，你的节奏。",
     "配色、明暗与动态，让专注更进一步。",
   ],
@@ -557,24 +562,21 @@ export default function App() {
   };
   return (
     <div className={`app-shell ${streamWindow ? "stream-window" : ""}`}>
-      <div className="ambient-grid" aria-hidden="true" />
-      <div className="ambient-orbit" aria-hidden="true" />
+      <StarMap />
       <aside className="sidebar">
         <button
           className="brand"
           onClick={() => navigate("overview")}
           aria-label="AuraEVTX 首页"
         >
-          <span className="brand-symbol">
-            A<span />
-          </span>
+          <OrbitMark />
           <span>
             AURA<span className="brand-evtx">EVTX</span>
-            <small>TRACE THE UNSEEN</small>
+            <small>EVENT OBSERVATORY</small>
           </span>
         </button>
         <div className="sidebar-label">
-          INVESTIGATION <span>01</span>
+          OBSERVATORY <span>01 / 04</span>
         </div>
         <nav>
           {(
@@ -685,21 +687,25 @@ export default function App() {
             onClick={() => navigate("settings")}
           >
             <Settings2 size={17} />
-            外观与设置<span>v0.2</span>
+            外观与设置<span>v0.3</span>
           </button>
         </div>
       </aside>
       <main className="main">
         <header className="topbar">
           <div className="breadcrumbs">
-            <span>{streamWindow ? "EVENT STREAM" : "WORKSPACE"}</span>
+            <span>{streamWindow ? "EVENT STREAM" : "AURA OBSERVATORY"}</span>
             <ChevronRight size={12} />
-            <b>{streamWindow ? "独立事件流" : "Aura / 本地调查"}</b>
+            <b>{streamWindow ? "独立事件流" : "本地证据档案"}</b>
             <span className="workspace-badge">
               {native ? "DESKTOP" : "WEB PREVIEW"}
             </span>
           </div>
           <div className="top-actions">
+            <ClockReadout
+              utc={utc}
+              onToggle={() => setUtc((value) => !value)}
+            />
             {streamWindow && (
               <>
                 <button
@@ -759,7 +765,7 @@ export default function App() {
             <div className="hero-copy">
               <div className="eyebrow">
                 <span />
-                WINDOWS EVENT FORENSICS <i>///</i>{" "}
+                WINDOWS EVENT ARCHIVE <i>✦</i>{" "}
                 {String(
                   [
                     "overview",
@@ -777,13 +783,12 @@ export default function App() {
               </div>
             </div>
             <div className="hero-right">
-              <div className="orbit-mark" aria-hidden="true">
-                <div className="orbit-ring" />
-                <div className="orbit-ring second" />
-                <Activity />
-                <span>AE</span>
-                <i />
-              </div>
+              <AstralClock
+                utc={utc}
+                first={stats.first}
+                last={stats.last}
+                onToggle={() => setUtc((value) => !value)}
+              />
               <div className="hero-tools">
                 <button
                   className="primary-button"
@@ -1873,7 +1878,7 @@ export default function App() {
                 <div className="about-mark">
                   A<span>/</span>
                 </div>
-                <span className="eyebrow">AURA EVTX / 0.2.0</span>
+                <span className="eyebrow">AURA EVTX / 0.3.0</span>
                 <h3>
                   每一条日志，
                   <br />

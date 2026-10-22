@@ -9,6 +9,7 @@ export default defineConfig({
     viewport: { width: 1512, height: 960 },
     channel: "msedge",
     headless: true,
+    timezoneId: "Asia/Shanghai",
   },
   webServer: {
     command: "npm run dev",
