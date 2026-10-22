@@ -54,6 +54,7 @@ import type {
   Stats,
 } from "./types";
 import catalogData from "../shared/catalog.json";
+import OrbitFrame, { DialRim } from "./components/OrbitFrame";
 import AstralClock, {
   ClockReadout,
   OrbitMark,
@@ -687,7 +688,7 @@ export default function App() {
             onClick={() => navigate("settings")}
           >
             <Settings2 size={17} />
-            外观与设置<span>v0.3</span>
+            外观与设置<span>v0.3.1</span>
           </button>
         </div>
       </aside>
@@ -1628,6 +1629,7 @@ export default function App() {
           {view === "overview" && (
             <div className="overview-grid">
               <section className="panel timeline-panel">
+                <OrbitFrame />
                 <div className="section-heading">
                   <div>
                     <span className="section-index">01</span>
@@ -1667,6 +1669,7 @@ export default function App() {
                 </div>
               </section>
               <section className="panel distribution-panel">
+                <OrbitFrame dial />
                 <div className="section-heading">
                   <div>
                     <span className="section-index">02</span>
@@ -1700,6 +1703,7 @@ export default function App() {
                 </div>
               </section>
               <section className="panel types-panel">
+                <OrbitFrame />
                 <div className="section-heading">
                   <div>
                     <span className="section-index">03</span>
@@ -1738,6 +1742,7 @@ export default function App() {
                 </div>
               </section>
               <section className="panel files-panel">
+                <OrbitFrame />
                 <div className="section-heading">
                   <div>
                     <span className="section-index">04</span>
@@ -1878,7 +1883,7 @@ export default function App() {
                 <div className="about-mark">
                   A<span>/</span>
                 </div>
-                <span className="eyebrow">AURA EVTX / 0.3.0</span>
+                <span className="eyebrow">AURA EVTX / 0.3.1</span>
                 <h3>
                   每一条日志，
                   <br />
@@ -1970,6 +1975,7 @@ function Metric({
 }) {
   return (
     <article className={`metric ${wide ? "metric-wide" : ""}`}>
+      <DialRim />
       <div className="metric-top">
         <span>{label}</span>
         <Icon size={16} />

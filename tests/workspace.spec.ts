@@ -1,6 +1,96 @@
 import { test, expect } from "@playwright/test";
 import { buildRecords } from "./support/records.mjs";
 
+test("content rims contain long lists at normal and minimum window sizes", async ({
+  page,
+  context,
+}) => {
+  await context.addInitScript((records) => {
+    (window as any).__AURA_TEST_RECORDS__ = records;
+  }, buildRecords());
+  await context.route("**/src/api.ts*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: 'export {api,native,streamWindow} from "/tests/support/browser-api.mjs";',
+    }),
+  );
+  await page.goto("/");
+  await expect(page.locator(".file-cards article")).toHaveCount(1);
+  // Stress the layout with extra rows; source data and application logic stay untouched.
+  await page.evaluate(() => {
+    for (const selector of [
+      ".top-types",
+      ".distribution-list",
+      ".file-cards",
+    ]) {
+      const list = document.querySelector(selector)!;
+      for (let i = 0; i < 9; i++)
+        list.appendChild(list.firstElementChild!.cloneNode(true));
+    }
+  });
+  for (const width of [1512, 1060]) {
+    await page.setViewportSize({ width, height: 960 });
+    const problems = await page.evaluate(() => {
+      const errors: string[] = [];
+      for (const panel of document.querySelectorAll(
+        ".overview-grid > .panel",
+      )) {
+        const rim = panel
+          .querySelector(".orbit-frame-outline")!
+          .getBoundingClientRect();
+        const box = panel.getBoundingClientRect();
+        if (
+          Math.abs(rim.height - box.height + 2) > 1 ||
+          Math.abs(rim.width - box.width + 2) > 1
+        )
+          errors.push("rim failed to resize");
+        for (const item of panel.querySelectorAll(
+          ".section-heading, .top-types > button, .distribution-list > button, .file-cards article",
+        )) {
+          const row = item.getBoundingClientRect();
+          if (
+            row.left < rim.left + 8 ||
+            row.right > rim.right - 8 ||
+            row.top < rim.top + 8 ||
+            row.bottom > rim.bottom - 8
+          )
+            errors.push("content outside rim");
+        }
+      }
+      return errors;
+    });
+    expect(problems).toEqual([]);
+  }
+});
+
+test("orbital borders move and respect motion settings", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const traveler = page.locator(".orbit-frame-traveler").first();
+  const offset = () =>
+    traveler.evaluate((el) => getComputedStyle(el).strokeDashoffset);
+  const start = await offset();
+  await expect.poll(offset).not.toBe(start);
+  await page.getByRole("button", { name: "外观设置", exact: true }).click();
+  await page.getByRole("switch", { name: "界面动态" }).click();
+  await page.getByRole("button", { name: /调查概览/ }).click();
+  await expect(traveler).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".dial-rim-orbit").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+  await page.getByRole("button", { name: "外观设置", exact: true }).click();
+  await page.getByRole("switch", { name: "界面动态" }).click();
+  await page.getByRole("button", { name: /调查概览/ }).click();
+  await expect(traveler).toHaveCSS("animation-name", "rim-journey");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(traveler).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".dial-rim-orbit").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+});
+
 test("independent stream window, full-width list, filters, detail and synchronized themes", async ({
   page,
   context,
