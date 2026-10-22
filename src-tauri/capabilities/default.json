@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Local event investigation window",
+  "windows": ["main", "event-stream"],
+  "permissions": ["core:default", "dialog:allow-open", "dialog:allow-save"]
+}

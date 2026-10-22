@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AuraEVTX",
+  "version": "0.2.0",
+  "identifier": "dev.aura.evtx",
+  "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
+  "app": {
+    "windows": [{ "title": "AuraEVTX — Windows 事件调查工作台", "width": 1512, "height": 960, "minWidth": 1060, "minHeight": 720, "backgroundColor": "#101b34", "dragDropEnabled": true }],
+    "security": { "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:" }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.ico"] }
+}

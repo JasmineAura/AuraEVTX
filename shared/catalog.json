@@ -1,0 +1,1226 @@
+[
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 1,
+    "title": "进程创建",
+    "category": "进程",
+    "description": "记录进程映像、命令行、哈希、用户和父进程。优先通过 ProcessGuid 关联后续行为。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 2,
+    "title": "文件创建时间修改",
+    "category": "文件",
+    "description": "进程修改了文件的创建时间。正常软件也可能执行此操作，需结合文件及进程上下文判断。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 3,
+    "title": "网络连接",
+    "category": "网络",
+    "description": "记录 TCP/UDP 连接的进程、源地址及目标地址。事件是否存在取决于采集配置。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 4,
+    "title": "Sysmon 服务状态变更",
+    "category": "系统",
+    "description": "Sysmon 服务启动或停止。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 5,
+    "title": "进程终止",
+    "category": "进程",
+    "description": "记录进程终止，可结合 ProcessGuid 确定进程生命周期。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 6,
+    "title": "驱动加载",
+    "category": "进程",
+    "description": "记录驱动加载及其哈希和签名信息。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 7,
+    "title": "映像 / DLL 加载",
+    "category": "进程",
+    "description": "记录进程加载的模块、哈希和签名。不能仅凭 DLL 加载判定注入。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 8,
+    "title": "创建远程线程",
+    "category": "进程",
+    "description": "一个进程在另一个进程中创建线程，需核对源进程、目标进程与起始地址。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 9,
+    "title": "原始磁盘访问",
+    "category": "文件",
+    "description": "记录进程使用原始访问方式读取磁盘或卷。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 10,
+    "title": "进程访问",
+    "category": "进程",
+    "description": "记录源进程打开目标进程的行为及 GrantedAccess；访问本身不等于恶意注入。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 11,
+    "title": "文件创建 / 覆盖",
+    "category": "文件",
+    "description": "进程创建或覆盖文件。结合 Image、TargetFilename 和 ProcessGuid 分析。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 12,
+    "title": "注册表对象创建 / 删除",
+    "category": "注册表",
+    "description": "记录注册表键或值的创建与删除，具体动作见 EventType。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 13,
+    "title": "注册表值设置",
+    "category": "注册表",
+    "description": "记录注册表值写入，检查 TargetObject 和 Details。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 14,
+    "title": "注册表键 / 值重命名",
+    "category": "注册表",
+    "description": "记录注册表对象重命名。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 15,
+    "title": "文件流创建及哈希",
+    "category": "文件",
+    "description": "记录命名文件流创建及哈希，可用于分析 Zone.Identifier 等备用数据流。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 16,
+    "title": "Sysmon 配置变更",
+    "category": "系统",
+    "description": "记录 Sysmon 过滤配置变更。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 17,
+    "title": "命名管道创建",
+    "category": "进程",
+    "description": "进程创建命名管道。结合 PipeName 与进程上下文分析。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 18,
+    "title": "命名管道连接",
+    "category": "进程",
+    "description": "进程连接命名管道。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 19,
+    "title": "WMI 事件过滤器活动",
+    "category": "持久化",
+    "description": "记录 WMI 事件过滤器注册等活动，具体动作见 Operation。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 20,
+    "title": "WMI 事件消费者活动",
+    "category": "持久化",
+    "description": "记录 WMI 事件消费者注册等活动。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 21,
+    "title": "WMI 消费者绑定活动",
+    "category": "持久化",
+    "description": "记录 WMI 过滤器与消费者绑定关系。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 22,
+    "title": "DNS 查询",
+    "category": "网络",
+    "description": "记录进程 DNS 查询、状态和结果。查询不意味着已建立网络连接。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 23,
+    "title": "文件删除并归档",
+    "category": "文件",
+    "description": "记录被删除文件并按 Sysmon 配置归档。EVTX 本身不包含归档文件内容。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 24,
+    "title": "剪贴板变更",
+    "category": "系统",
+    "description": "记录剪贴板内容变化相关信息，依赖采集配置。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 25,
+    "title": "进程篡改检测",
+    "category": "进程",
+    "description": "Sysmon 检测到进程映像篡改行为，检查 Type 等字段。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 26,
+    "title": "文件删除记录",
+    "category": "文件",
+    "description": "记录文件删除，不进行文件归档。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 27,
+    "title": "阻止可执行文件创建",
+    "category": "文件",
+    "description": "Sysmon 阻止了符合配置的可执行文件创建。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 28,
+    "title": "阻止文件粉碎",
+    "category": "文件",
+    "description": "Sysmon 阻止了符合配置的文件粉碎操作。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 29,
+    "title": "检测到可执行文件创建",
+    "category": "文件",
+    "description": "Sysmon 检测到可执行文件创建，结合文件路径及哈希判断。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Sysmon",
+    "channel": "Microsoft-Windows-Sysmon/Operational",
+    "id": 255,
+    "title": "Sysmon 内部错误",
+    "category": "系统",
+    "description": "Sysmon 处理任务时发生错误，可能影响日志覆盖。",
+    "source": "https://learn.microsoft.com/sysinternals/downloads/sysmon"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "channel": "Security",
+    "id": 1100,
+    "title": "事件日志服务关闭",
+    "category": "审计",
+    "description": "Windows 事件日志服务关闭。",
+    "source": "https://learn.microsoft.com/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-1100"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "channel": "Security",
+    "id": 1101,
+    "title": "审计事件丢失",
+    "category": "审计",
+    "description": "审计事件在传输过程中丢失，需检查采集完整性。",
+    "source": "https://learn.microsoft.com/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-1101"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "channel": "Security",
+    "id": 1102,
+    "title": "安全日志被清除",
+    "category": "审计",
+    "description": "安全审计日志被清除，检查执行用户和时间。",
+    "source": "https://learn.microsoft.com/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-1102"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4616,
+    "title": "系统时间修改",
+    "category": "系统",
+    "description": "系统时间发生更改，核对旧时间、新时间和执行主体。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4624,
+    "title": "账户登录成功",
+    "category": "登录",
+    "description": "检查 TargetUserName、LogonType、IpAddress、TargetLogonId。网络登录不等于交互登录。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4625,
+    "title": "账户登录失败",
+    "category": "登录",
+    "description": "检查失败原因、状态码、登录类型及来源地址。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4634,
+    "title": "登录会话结束",
+    "category": "登录",
+    "description": "登录会话注销，使用 LogonId 关联同主机中的登录事件。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4647,
+    "title": "用户主动注销",
+    "category": "登录",
+    "description": "用户发起注销操作。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4648,
+    "title": "使用显式凭据登录",
+    "category": "登录",
+    "description": "进程使用显式提供的凭据尝试登录。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4672,
+    "title": "新登录获特殊权限",
+    "category": "权限",
+    "description": "登录被授予敏感权限，常见于管理员和系统账户，并不直接代表提权。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4673,
+    "title": "调用特权服务",
+    "category": "权限",
+    "description": "发生特权服务调用，结合主体和权限列表判断。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4674,
+    "title": "特权对象操作",
+    "category": "权限",
+    "description": "进程尝试对特权对象执行操作。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4688,
+    "title": "新进程创建",
+    "category": "进程",
+    "description": "记录新进程及创建者。命令行是否记录取决于审计策略。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4689,
+    "title": "进程退出",
+    "category": "进程",
+    "description": "记录进程终止及退出状态。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4697,
+    "title": "服务安装",
+    "category": "持久化",
+    "description": "系统中安装了服务，检查服务映像、账户与启动方式。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4698,
+    "title": "计划任务创建",
+    "category": "持久化",
+    "description": "记录新计划任务及任务 XML。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4699,
+    "title": "计划任务删除",
+    "category": "持久化",
+    "description": "记录计划任务删除。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4700,
+    "title": "计划任务启用",
+    "category": "持久化",
+    "description": "记录计划任务启用。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4701,
+    "title": "计划任务禁用",
+    "category": "持久化",
+    "description": "记录计划任务禁用。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4702,
+    "title": "计划任务更新",
+    "category": "持久化",
+    "description": "记录计划任务配置更新。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4719,
+    "title": "系统审计策略变更",
+    "category": "审计",
+    "description": "记录系统审计策略更改。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4720,
+    "title": "用户账户创建",
+    "category": "账户",
+    "description": "创建用户账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4722,
+    "title": "用户账户启用",
+    "category": "账户",
+    "description": "启用用户账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4723,
+    "title": "尝试修改账户密码",
+    "category": "账户",
+    "description": "用户尝试更改账户密码。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4724,
+    "title": "尝试重置账户密码",
+    "category": "账户",
+    "description": "尝试重置其他账户的密码，核对操作主体。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4725,
+    "title": "用户账户禁用",
+    "category": "账户",
+    "description": "禁用用户账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4726,
+    "title": "用户账户删除",
+    "category": "账户",
+    "description": "删除用户账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4728,
+    "title": "成员加入全局安全组",
+    "category": "账户",
+    "description": "成员被添加到启用安全的全局组。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4729,
+    "title": "成员移出全局安全组",
+    "category": "账户",
+    "description": "成员被移出启用安全的全局组。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4732,
+    "title": "成员加入本地安全组",
+    "category": "账户",
+    "description": "成员被添加到本地安全组，检查是否为 Administrators 等敏感组。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4733,
+    "title": "成员移出本地安全组",
+    "category": "账户",
+    "description": "成员被移出本地安全组。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4738,
+    "title": "用户账户属性变更",
+    "category": "账户",
+    "description": "记录用户账户属性修改。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4740,
+    "title": "用户账户锁定",
+    "category": "账户",
+    "description": "用户账户被锁定，结合登录失败来源分析。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4741,
+    "title": "计算机账户创建",
+    "category": "账户",
+    "description": "创建计算机账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4742,
+    "title": "计算机账户变更",
+    "category": "账户",
+    "description": "修改计算机账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4743,
+    "title": "计算机账户删除",
+    "category": "账户",
+    "description": "删除计算机账户。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4756,
+    "title": "成员加入通用安全组",
+    "category": "账户",
+    "description": "成员被添加到启用安全的通用组。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4767,
+    "title": "用户账户解锁",
+    "category": "账户",
+    "description": "用户账户被解锁。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4768,
+    "title": "请求 Kerberos TGT",
+    "category": "登录",
+    "description": "域控制器处理 Kerberos 身份验证服务票据请求，核对状态与加密类型。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4769,
+    "title": "请求 Kerberos 服务票据",
+    "category": "登录",
+    "description": "域控制器处理 Kerberos 服务票据请求，需结合服务名、账户及加密类型。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4770,
+    "title": "Kerberos 服务票据续订",
+    "category": "登录",
+    "description": "Kerberos 服务票据续订。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4771,
+    "title": "Kerberos 预身份验证失败",
+    "category": "登录",
+    "description": "Kerberos 预身份验证失败，核对 FailureCode。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4776,
+    "title": "凭据验证",
+    "category": "登录",
+    "description": "计算机尝试验证账户凭据，常用于 NTLM 身份验证调查。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4778,
+    "title": "会话重新连接",
+    "category": "登录",
+    "description": "会话重新连接到窗口工作站。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4779,
+    "title": "会话断开",
+    "category": "登录",
+    "description": "会话从窗口工作站断开。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4798,
+    "title": "枚举用户本地组成员关系",
+    "category": "账户",
+    "description": "枚举用户的本地组成员关系。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4799,
+    "title": "枚举本地安全组成员",
+    "category": "账户",
+    "description": "枚举本地安全组成员。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4800,
+    "title": "工作站锁定",
+    "category": "登录",
+    "description": "工作站被锁定。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4801,
+    "title": "工作站解锁",
+    "category": "登录",
+    "description": "工作站被解锁。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4656,
+    "title": "请求对象句柄",
+    "category": "对象访问",
+    "description": "请求访问对象的句柄，需结合 ObjectType、ObjectName 和 AccessMask。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4657,
+    "title": "注册表值修改",
+    "category": "注册表",
+    "description": "注册表值被修改，依赖对象审计配置。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4660,
+    "title": "对象删除",
+    "category": "对象访问",
+    "description": "对象被删除，关联 HandleId 获取对象信息。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4662,
+    "title": "目录服务对象操作",
+    "category": "对象访问",
+    "description": "对目录服务对象执行操作，需结合访问权限和对象 GUID。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 4663,
+    "title": "对象访问尝试",
+    "category": "对象访问",
+    "description": "对象被尝试访问，具体操作由访问掩码确定。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5140,
+    "title": "网络共享访问",
+    "category": "网络",
+    "description": "网络共享对象被访问，检查共享名和来源地址。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5142,
+    "title": "网络共享创建",
+    "category": "网络",
+    "description": "新建网络共享对象。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5143,
+    "title": "网络共享修改",
+    "category": "网络",
+    "description": "修改网络共享对象。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5144,
+    "title": "网络共享删除",
+    "category": "网络",
+    "description": "删除网络共享对象。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5145,
+    "title": "网络共享访问检查",
+    "category": "网络",
+    "description": "对共享中的对象执行访问权限检查，结合相对路径与访问掩码。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5156,
+    "title": "筛选平台允许连接",
+    "category": "网络",
+    "description": "Windows 筛选平台允许网络连接。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5157,
+    "title": "筛选平台阻止连接",
+    "category": "网络",
+    "description": "Windows 筛选平台阻止网络连接。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5136,
+    "title": "目录服务对象修改",
+    "category": "对象访问",
+    "description": "Active Directory 对象被修改。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5137,
+    "title": "目录服务对象创建",
+    "category": "对象访问",
+    "description": "Active Directory 对象被创建。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5139,
+    "title": "目录服务对象移动",
+    "category": "对象访问",
+    "description": "Active Directory 对象被移动。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Microsoft-Windows-Security-Auditing",
+    "channel": "Security",
+    "id": 5141,
+    "title": "目录服务对象删除",
+    "category": "对象访问",
+    "description": "Active Directory 对象被删除。",
+    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7031,
+    "title": "服务意外终止",
+    "category": "系统",
+    "description": "服务意外终止，可能配置了恢复操作。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7034,
+    "title": "服务意外终止",
+    "category": "系统",
+    "description": "服务意外终止。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7035,
+    "title": "服务收到控制请求",
+    "category": "系统",
+    "description": "服务收到启动、停止等控制请求。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7036,
+    "title": "服务状态变更",
+    "category": "系统",
+    "description": "服务进入运行、停止等状态。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7040,
+    "title": "服务启动类型变更",
+    "category": "持久化",
+    "description": "服务启动类型被修改。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Service Control Manager",
+    "channel": "System",
+    "id": 7045,
+    "title": "新服务安装",
+    "category": "持久化",
+    "description": "系统中安装了新服务。检查 ImagePath、ServiceName 和 AccountName。",
+    "source": "https://learn.microsoft.com/windows/win32/services/service-control-manager"
+  },
+  {
+    "provider": "Microsoft-Windows-PowerShell",
+    "channel": "Microsoft-Windows-PowerShell/Operational",
+    "id": 4103,
+    "title": "PowerShell 模块日志",
+    "category": "脚本",
+    "description": "记录管道执行及模块调用信息。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "Microsoft-Windows-PowerShell",
+    "channel": "Microsoft-Windows-PowerShell/Operational",
+    "id": 4104,
+    "title": "PowerShell 脚本块",
+    "category": "脚本",
+    "description": "记录脚本块文本，长脚本可能分片，使用 ScriptBlockId 和 MessageNumber 重组。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "Microsoft-Windows-PowerShell",
+    "channel": "Microsoft-Windows-PowerShell/Operational",
+    "id": 4105,
+    "title": "脚本块执行开始",
+    "category": "脚本",
+    "description": "脚本块调用开始，依赖相应日志配置。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "Microsoft-Windows-PowerShell",
+    "channel": "Microsoft-Windows-PowerShell/Operational",
+    "id": 4106,
+    "title": "脚本块执行结束",
+    "category": "脚本",
+    "description": "脚本块调用结束。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "PowerShell",
+    "channel": "Windows PowerShell",
+    "id": 400,
+    "title": "PowerShell 引擎启动",
+    "category": "脚本",
+    "description": "PowerShell 引擎状态变为 Available。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "PowerShell",
+    "channel": "Windows PowerShell",
+    "id": 403,
+    "title": "PowerShell 引擎停止",
+    "category": "脚本",
+    "description": "PowerShell 引擎状态变为 Stopped。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "PowerShell",
+    "channel": "Windows PowerShell",
+    "id": 600,
+    "title": "PowerShell 提供程序状态",
+    "category": "脚本",
+    "description": "PowerShell 提供程序生命周期事件。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "PowerShell",
+    "channel": "Windows PowerShell",
+    "id": 800,
+    "title": "PowerShell 管道执行",
+    "category": "脚本",
+    "description": "记录 PowerShell 管道执行详情。",
+    "source": "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 100,
+    "title": "计划任务启动",
+    "category": "持久化",
+    "description": "任务实例开始运行。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 102,
+    "title": "计划任务完成",
+    "category": "持久化",
+    "description": "任务实例完成。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 106,
+    "title": "计划任务注册",
+    "category": "持久化",
+    "description": "计划任务被注册。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 140,
+    "title": "计划任务更新",
+    "category": "持久化",
+    "description": "计划任务配置被更新。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 141,
+    "title": "计划任务删除",
+    "category": "持久化",
+    "description": "计划任务被删除。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 200,
+    "title": "计划任务动作启动",
+    "category": "持久化",
+    "description": "计划任务中的动作开始执行。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-TaskScheduler",
+    "channel": "Microsoft-Windows-TaskScheduler/Operational",
+    "id": 201,
+    "title": "计划任务动作完成",
+    "category": "持久化",
+    "description": "计划任务动作完成，检查返回码。",
+    "source": "https://learn.microsoft.com/windows/win32/taskschd/task-scheduler-start-page"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 1000,
+    "title": "Defender 扫描启动",
+    "category": "防护",
+    "description": "Microsoft Defender Antivirus 开始扫描。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 1001,
+    "title": "Defender 扫描完成",
+    "category": "防护",
+    "description": "Microsoft Defender Antivirus 扫描完成。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 1116,
+    "title": "检测到恶意软件或潜在不需要的软件",
+    "category": "防护",
+    "description": "Defender 检测到威胁，结合 ThreatName、Path 和后续处置结果。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 1117,
+    "title": "Defender 威胁处置",
+    "category": "防护",
+    "description": "Defender 对检测到的威胁执行操作，检查处置结果。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 1118,
+    "title": "Defender 威胁处置失败",
+    "category": "防护",
+    "description": "Defender 对检测到的威胁执行操作时发生非严重错误。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 5001,
+    "title": "实时保护禁用",
+    "category": "防护",
+    "description": "Defender 实时保护被禁用。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-Windows Defender",
+    "channel": "Microsoft-Windows-Windows Defender/Operational",
+    "id": 5007,
+    "title": "Defender 配置变更",
+    "category": "防护",
+    "description": "Defender 配置发生变化；正常系统维护也会触发。",
+    "source": "https://learn.microsoft.com/defender-endpoint/troubleshoot-microsoft-defender-antivirus"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-LocalSessionManager",
+    "channel": "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+    "id": 21,
+    "title": "远程桌面会话登录成功",
+    "category": "登录",
+    "description": "远程桌面服务会话登录成功。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-LocalSessionManager",
+    "channel": "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+    "id": 22,
+    "title": "远程桌面 Shell 启动",
+    "category": "登录",
+    "description": "远程桌面会话收到 Shell 启动通知。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-LocalSessionManager",
+    "channel": "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+    "id": 23,
+    "title": "远程桌面会话注销",
+    "category": "登录",
+    "description": "远程桌面会话注销成功。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-LocalSessionManager",
+    "channel": "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+    "id": 24,
+    "title": "远程桌面会话断开",
+    "category": "登录",
+    "description": "远程桌面会话已断开。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-LocalSessionManager",
+    "channel": "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+    "id": 25,
+    "title": "远程桌面会话重新连接",
+    "category": "登录",
+    "description": "远程桌面会话重新连接成功。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-TerminalServices-RemoteConnectionManager",
+    "channel": "Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational",
+    "id": 1149,
+    "title": "远程桌面用户身份验证成功",
+    "category": "登录",
+    "description": "远程桌面用户身份验证成功，不单独证明桌面会话已建立。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-server/remote/remote-desktop-services-overview"
+  },
+  {
+    "provider": "Microsoft-Windows-Eventlog",
+    "channel": "System",
+    "id": 104,
+    "title": "事件日志清除",
+    "category": "审计",
+    "description": "某个事件日志被清除，核对日志名称和执行主体。",
+    "source": "https://learn.microsoft.com/windows/win32/wes/windows-event-log"
+  },
+  {
+    "provider": "EventLog",
+    "channel": "System",
+    "id": 6005,
+    "title": "事件日志服务启动",
+    "category": "系统",
+    "description": "事件日志服务启动，常作为系统启动的辅助线索。",
+    "source": "https://learn.microsoft.com/windows/win32/eventlog/event-logging"
+  },
+  {
+    "provider": "EventLog",
+    "channel": "System",
+    "id": 6006,
+    "title": "事件日志服务停止",
+    "category": "系统",
+    "description": "事件日志服务停止，常见于正常关机。",
+    "source": "https://learn.microsoft.com/windows/win32/eventlog/event-logging"
+  },
+  {
+    "provider": "EventLog",
+    "channel": "System",
+    "id": 6008,
+    "title": "上次关机异常",
+    "category": "系统",
+    "description": "系统检测到上一次关机不正常。",
+    "source": "https://learn.microsoft.com/windows/win32/eventlog/event-logging"
+  },
+  {
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "channel": "System",
+    "id": 41,
+    "title": "系统未正常关闭后重新启动",
+    "category": "系统",
+    "description": "系统在未正常关闭的情况下重新启动，不能单凭此事件确定原因。",
+    "source": "https://learn.microsoft.com/troubleshoot/windows-client/performance/event-id-41-restart"
+  },
+  {
+    "provider": "Application Error",
+    "channel": "Application",
+    "id": 1000,
+    "title": "应用程序崩溃",
+    "category": "应用",
+    "description": "应用程序发生故障，检查故障模块、异常代码和程序路径。",
+    "source": "https://learn.microsoft.com/windows/win32/wer/windows-error-reporting"
+  },
+  {
+    "provider": "Windows Error Reporting",
+    "channel": "Application",
+    "id": 1001,
+    "title": "Windows 错误报告",
+    "category": "应用",
+    "description": "系统生成错误报告，检查事件类型和故障桶。",
+    "source": "https://learn.microsoft.com/windows/win32/wer/windows-error-reporting"
+  }
+]
