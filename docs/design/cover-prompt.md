@@ -1,28 +1,17 @@
-# AuraEVTX README cover
+# AuraEVTX minimal README cover
 
-Generated with the built-in `image_gen` tool. This is original promotional artwork; the existing application screenshots were used only as visual references.
+Generated with the built-in `image_gen` tool. The application overview screenshot is a visual reference; the final cover is a restrained, UI-inspired composition.
 
 Final asset: `docs/assets/cover.png`.
 
 ## Final generation prompt
 
 ```text
-Use case: ads-marketing.
-Create ONE original, finished, premium landscape GitHub README cover / software feature overview for AuraEVTX, a Windows EVTX forensic investigation desktop application. Wide 2:1 aspect ratio, ideally 2400x1200 or similar high-resolution landscape. This is a deliberately designed promotional artwork, NOT a screenshot pasted as a cover. The two input images are REFERENCE IMAGES ONLY: learn the real app's navy/royal-blue/signal-yellow palette, italic branding, slanted geometric details, event table, XML inspector and chart style. Do not copy the entire screenshot, do not show browser preview badges or synthetic record counts.
+Use case: ads-marketing. Create a NEW minimalist landscape README cover for AuraEVTX. Aspect ratio 2:1. The provided screenshot is a STYLE REFERENCE ONLY: match the calm dark navy flat desktop application, understated blue panels, very sparse yellow accents, italic white heading, thin panel borders and precise layout. The user rejected the previous cover for being far too flashy and verbose. This version must feel like the quiet main interface of the actual software.
 
-Design direction: restrained, serious, prestigious cybersecurity software editorial design with kinetic angular geometry, bold italic typographic energy inspired by stylish Japanese game menu art, but original composition. Very dark navy #0D1425 background; electric cobalt #456DFF panels; signal gold #F4D15C accents; white headings. Matte high-end finish, thin orbital arcs and subtle data traces, crisp geometric outlines, precise spacing, ample margins. No anime character, no hooded hacker, no stock laptop photograph, no cheesy neon cyberpunk, no unrelated brand logos, no QR code.
+Design a restrained flat UI-inspired editorial composition, not a literal full screenshot and not a marketing feature infographic. Background solid deep navy #0D1425. Left approx 42%: a small angular A-like white-and-blue mark with one short yellow underline, large clean italic white typography 'AURA EVTX', and ONLY one small subdued line below it: 'Windows 事件日志调查工作台'. Plenty of generous empty space. A single tiny yellow slash next to the title may echo the screenshot. No other slogans or feature copy.
 
-Composition: top/upper-middle approx 60% is a striking visual hero. On the left, HUGE impeccably spelled 'AURA EVTX' white italic heavy title with a small gold diagonal slash. Below, readable Chinese subtitle 'Windows 事件日志调查工作台' and tagline '让每一条事件，成为看得懂的线索。'. Below title, compact truthful technology labels 'TAURI 2  /  RUST  /  LOCAL-FIRST'. On the right, an elegant layered editorial collage of three simplified native application windows: dominant dark event stream with real-looking rows and event ID chips (1, 3, 11, 22, 4624), an offset event detail/XML inspector card, and a small timeline chart card. Show a smaller light-theme sliver behind dark cards and three discreet theme swatches (blue/gold, teal/amber, violet/silver). Mild perspective is OK but prioritize flat crisp readability, not extreme 3D. Windows visibly separate, not a single dashboard. Do not imply attack detection or AI.
+Right approx 58%: ONE simplified straight-on software main-interface panel, aligned cleanly and calmly, with thin blue-grey border and no heavy perspective. Within this panel a compact top strip of four subtle statistic tiles, a simple blue vertical bar timeline with just a few gold highlights, and a small neat event-list area with a few rows and understated ID chips 1, 11, 22. Keep panel text sparse and tiny, suitable as quiet interface texture rather than reading material; optional small panel headings '事件概览' and '事件流' only. No large numbers promising performance. The composition itself conveys a thoughtful forensic desktop workspace without spelling out capabilities. Use royal blue #456DFF sparingly, gold #F4D15C as a few small strokes only, white for title, muted blue-grey for UI details. Flat, matte, almost no shadows. Sophisticated professional desktop-app visual, crisp border details, substantial negative space.
 
-Bottom approx 35%: an intentional precise 2-row x 4-column feature grid, eight distinct small professional feature groups, each with a clean outline icon, a short Chinese feature title and one very short supporting line. Real legible Chinese typography, high contrast, consistent typeface, no illegible pseudo-text. Exact feature copy:
-1. title '通用 EVTX 导入' / supporting '文件 · 多选 · 目录 · 拖放'
-2. title '独立事件窗口' / supporting '默认最大化 · 详情按需展开'
-3. title '136 条中文释义' / supporting '提供者 + 通道 + 事件 ID'
-4. title '全文搜索与筛选' / supporting '时间 · 主机 · 来源 · 级别'
-5. title '完整字段与 XML' / supporting '保留原始记录 · 字段快速检索'
-6. title '证据收藏与导出' / supporting '持久收藏 · CSV 导出'
-7. title '本地解析与索引' / supporting 'SQLite · SHA-256 去重'
-8. title '三套配色与明暗主题' / supporting '跨窗口同步 · 动效可关闭'
-
-Slim footer with small clear text: '时间分布  /  后台导入  /  进度与取消  /  UTC 与本地时间' and small author credit 'JasmineAura'. Include only the specified title, tagline, labels, features and credit; avoid fabricated numerical performance claims, attack graphs, AI, Sigma, 'all events translated', security certifications or other features the product does not have. Keep all important text comfortably away from edges. Make the artwork exceptionally composed and polished as a single immediately useful README banner showcasing the software's actual breadth. Chinese text must be accurately written.
+ABSOLUTELY NO feature cards, feature lists, infographic grid, eight selling points, descriptive footer, badges, author credit, QR code, shield lock icon, hacker, dramatic lighting, glow, gradients, neon, glowing particles, diagonal background streaks, overlapping windows, floating 3D cards, ornamental orbital rings, cyberpunk elements, exaggerated metallic logo or flashy effects. No old cover elements. The only prominent words are 'AURA EVTX' and 'Windows 事件日志调查工作台'. Keep it elegant, sober, simple, and very close in spirit to the supplied real software interface.
 ```
