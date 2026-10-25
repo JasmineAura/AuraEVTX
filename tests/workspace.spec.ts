@@ -1,6 +1,28 @@
 import { test, expect } from "@playwright/test";
 import { buildRecords } from "./support/records.mjs";
 
+test("firewall atlas exposes the five provider-scoped event meanings", async ({
+  page,
+}) => {
+  await page.goto("/?view=catalog");
+  await page
+    .getByRole("combobox", { name: "图鉴提供者" })
+    .selectOption("Microsoft-Windows-Windows Firewall With Advanced Security");
+  await expect(page.locator(".definition-card")).toHaveCount(5);
+  for (const [id, title] of [
+    [2004, "防火墙规则添加"],
+    [2005, "防火墙规则修改"],
+    [2006, "防火墙规则删除"],
+    [2010, "网络接口配置文件变更"],
+    [2033, "防火墙全部规则删除"],
+  ] as const) {
+    await page.getByRole("textbox", { name: "搜索事件图鉴" }).fill(String(id));
+    await expect(page.locator(".definition-card")).toHaveCount(1);
+    await expect(page.locator(".definition-card")).toContainText(title);
+    await expect(page.locator(".definition-card")).toContainText("网络");
+  }
+});
+
 test("unload sources with confirmation, clear stale detail and sync both windows", async ({
   page,
   context,

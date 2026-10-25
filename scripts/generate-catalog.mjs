@@ -521,6 +521,48 @@ add(
     ],
   ],
 );
+const firewallProvider =
+  "Microsoft-Windows-Windows Firewall With Advanced Security";
+const firewallChannel = `${firewallProvider}/Firewall`;
+for (const [id, title, description, page] of [
+  [
+    2004,
+    "防火墙规则添加",
+    "向 Windows 防火墙例外列表添加规则。检查规则名称、应用程序路径、方向、协议、端口、操作及修改用户与程序；添加规则不代表已发生网络连接。",
+    "EventId_2004_Microsoft-Windows-WindowsFirewallwithAdvancedS_65673.asp",
+  ],
+  [
+    2005,
+    "防火墙规则修改",
+    "修改 Windows 防火墙例外列表中的规则。核对规则 ID、名称、适用配置文件、允许或阻止操作，以及修改用户与程序；事件不一定包含修改前的值。",
+    "EventId_2005_Microsoft-Windows-WindowsFirewallwithAdvancedS_65674.asp",
+  ],
+  [
+    2006,
+    "防火墙规则删除",
+    "从 Windows 防火墙例外列表删除规则。检查 RuleId、RuleName、ModifyingUser 和 ModifyingApplication，并结合相邻的规则添加或修改事件分析。",
+    "EventId_2006_Microsoft-Windows-WindowsFirewallwithAdvancedS_65675.asp",
+  ],
+  [
+    2010,
+    "网络接口配置文件变更",
+    "网络接口使用的网络配置文件发生变化。检查 InterfaceGuid、InterfaceName、OldProfile 和 NewProfile；此事件本身不代表防火墙已关闭。",
+    "EventId_2010_Microsoft-Windows-WindowsFirewallwithAdvancedS_65677.asp",
+  ],
+  [
+    2033,
+    "防火墙全部规则删除",
+    "Windows 防火墙配置中的所有规则被删除。检查存储类型、ModifyingUser 与 ModifyingApplication，并结合策略应用、配置重置及后续规则事件判断原因。",
+    "EventId_2033_Microsoft-Windows-WindowsFirewallwithAdvancedS_65679.asp",
+  ],
+])
+  add(
+    firewallProvider,
+    firewallChannel,
+    `https://kb.eventtracker.com/evtpass/evtPages/${page}`,
+    [[id, title, "网络", description]],
+  );
+
 // Security log clear / loss events belong to Eventlog, not Security-Auditing.
 for (const entry of entries) {
   if (

@@ -52,14 +52,56 @@ pub fn connect(path: &Path) -> Result<Connection> {
     Ok(conn)
 }
 pub fn initialize(path: &Path) -> Result<()> {
-    let conn = connect(path)?;
+    let mut conn = connect(path)?;
     conn.execute_batch("PRAGMA journal_mode=WAL;
         CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY, name TEXT NOT NULL, path TEXT NOT NULL, hash TEXT UNIQUE NOT NULL, count INTEGER NOT NULL DEFAULT 0, errors INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY, file_id INTEGER NOT NULL REFERENCES files(id), record_id INTEGER NOT NULL, event_id INTEGER NOT NULL, provider TEXT NOT NULL, channel TEXT NOT NULL, computer TEXT NOT NULL, time TEXT NOT NULL, level INTEGER NOT NULL, operation TEXT NOT NULL, category TEXT NOT NULL, summary TEXT NOT NULL, fields TEXT NOT NULL, xml TEXT NOT NULL, bookmarked INTEGER NOT NULL DEFAULT 0);
         CREATE INDEX IF NOT EXISTS idx_events_time ON events(time);
         CREATE INDEX IF NOT EXISTS idx_events_type ON events(provider,channel,event_id);
         CREATE INDEX IF NOT EXISTS idx_events_file ON events(file_id);
-        CREATE INDEX IF NOT EXISTS idx_events_bookmark ON events(bookmarked);").map_err(err)
+        CREATE INDEX IF NOT EXISTS idx_events_bookmark ON events(bookmarked);
+        CREATE TABLE IF NOT EXISTS workspace_metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);").map_err(err)?;
+    refresh_catalog(&mut conn)
+}
+
+// Update persisted labels once per dictionary revision, preserving evidence and bookmarks.
+fn refresh_catalog(conn: &mut Connection) -> Result<()> {
+    let revision = format!(
+        "{:x}",
+        Sha256::digest(include_bytes!("../../shared/catalog.json"))
+    );
+    let tx = conn.transaction().map_err(err)?;
+    let previous: Option<String> = tx
+        .query_row(
+            "SELECT value FROM workspace_metadata WHERE key='catalog_revision'",
+            [],
+            |r| r.get(0),
+        )
+        .optional()
+        .map_err(err)?;
+    if previous.as_deref() == Some(&revision) {
+        return Ok(());
+    }
+    let scopes = tx
+        .prepare("SELECT DISTINCT provider,channel,event_id FROM events")
+        .map_err(err)?
+        .query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, u32>(2)?,
+            ))
+        })
+        .map_err(err)?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(err)?;
+    for (provider, channel, id) in scopes {
+        if let Some(d) = definition(&provider, &channel, id) {
+            tx.execute("UPDATE events SET operation=?,category=? WHERE provider=? AND channel=? AND event_id=? AND (operation<>? OR category<>?)", params![d.title,d.category,provider,channel,id,d.title,d.category]).map_err(err)?;
+        }
+    }
+    tx.execute("INSERT INTO workspace_metadata(key,value) VALUES('catalog_revision',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [revision]).map_err(err)?;
+    tx.commit().map_err(err)
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -449,26 +491,49 @@ pub fn parse_xml(xml: &str, fallback_id: u64) -> Result<Parsed> {
     let category = def
         .map(|d| d.category.clone())
         .unwrap_or_else(|| "其他".into());
-    let summary = [
-        "Image",
-        "CommandLine",
-        "TargetFilename",
-        "TargetObject",
-        "QueryName",
-        "DestinationIp",
-        "TargetUserName",
-        "ServiceName",
-        "ScriptBlockText",
-    ]
-    .iter()
-    .filter_map(|key| {
-        fields
-            .get(*key)
-            .filter(|v| !v.is_empty())
-            .map(|v| format!("{key}: {v}"))
-    })
-    .collect::<Vec<_>>()
-    .join(" · ");
+    let summary_keys: &[&str] = if provider
+        .eq_ignore_ascii_case("Microsoft-Windows-Windows Firewall With Advanced Security")
+        && channel.eq_ignore_ascii_case(
+            "Microsoft-Windows-Windows Firewall With Advanced Security/Firewall",
+        ) {
+        &[
+            "RuleName",
+            "RuleId",
+            "ApplicationPath",
+            "InterfaceName",
+            "OldProfile",
+            "NewProfile",
+            "Direction",
+            "Action",
+            "LocalPorts",
+            "RemotePorts",
+            "ModifyingUser",
+            "ModifyingApplication",
+            "Store Type",
+        ]
+    } else {
+        &[
+            "Image",
+            "CommandLine",
+            "TargetFilename",
+            "TargetObject",
+            "QueryName",
+            "DestinationIp",
+            "TargetUserName",
+            "ServiceName",
+            "ScriptBlockText",
+        ]
+    };
+    let summary = summary_keys
+        .iter()
+        .filter_map(|key| {
+            fields
+                .get(*key)
+                .filter(|v| !v.is_empty())
+                .map(|v| format!("{key}: {v}"))
+        })
+        .collect::<Vec<_>>()
+        .join(" · ");
     let summary = if summary.is_empty() {
         fields
             .iter()
@@ -764,6 +829,92 @@ pub fn export(path: &Path, filter: &Filter, output: &Path) -> Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn firewall_catalog_parses_scoped_ids_and_upgrades_existing_labels() {
+        let provider = "Microsoft-Windows-Windows Firewall With Advanced Security";
+        let channel = format!("{provider}/Firewall");
+        let expected = [
+            (2004, "防火墙规则添加"),
+            (2005, "防火墙规则修改"),
+            (2006, "防火墙规则删除"),
+            (2010, "网络接口配置文件变更"),
+            (2033, "防火墙全部规则删除"),
+        ];
+        for (id, title) in expected {
+            let xml = format!(
+                r#"<Event><System><Provider Name="{provider}"/><EventID>{id}</EventID><Channel>{channel}</Channel><TimeCreated SystemTime="2026-10-25T00:00:00Z"/></System><EventData><Data Name="RuleName">Allow HTTPS</Data><Data Name="ModifyingApplication">netsh.exe</Data><Data Name="InterfaceName">Ethernet</Data><Data Name="OldProfile">1</Data><Data Name="NewProfile">4</Data></EventData></Event>"#
+            );
+            let event = parse_xml(&xml, 1).unwrap();
+            assert_eq!(event.operation, title);
+            assert_eq!(event.category, "网络");
+            assert!(event.summary.contains("RuleName: Allow HTTPS"));
+            assert!(event.summary.contains("ModifyingApplication: netsh.exe"));
+            assert!(event.summary.contains("NewProfile: 4"));
+            assert_eq!(event.fields["OldProfile"], "1");
+            assert!(definition("OtherProvider", &channel, id).is_none());
+            assert!(definition(provider, "System", id).is_none());
+            assert!(definition(provider, &format!("{provider}/ConnectionSecurity"), id).is_none());
+        }
+        let db = std::env::temp_dir().join(format!(
+            "aura-firewall-{}-{}.db",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        initialize(&db).unwrap();
+        {
+            let conn = connect(&db).unwrap();
+            conn.execute("INSERT INTO files(id,name,path,hash,count) VALUES(1,'firewall.evtx','firewall.evtx','firewall-hash',7)",[]).unwrap();
+            for (event_provider, event_channel, id) in expected
+                .into_iter()
+                .map(|(id, _)| (provider, channel.as_str(), id))
+                .chain([
+                    ("OtherProvider", channel.as_str(), 2004),
+                    (provider, "System", 2004),
+                ])
+            {
+                conn.execute("INSERT INTO events(file_id,record_id,event_id,provider,channel,computer,time,level,operation,category,summary,fields,xml,bookmarked) VALUES(1,1,?,?,?,'host','2026-10-25T00:00:00Z',4,'未收录释义','其他','original summary','{}','<Event/>',1)",params![id,event_provider,event_channel]).unwrap();
+            }
+            conn.execute(
+                "DELETE FROM workspace_metadata WHERE key='catalog_revision'",
+                [],
+            )
+            .unwrap();
+        }
+        initialize(&db).unwrap();
+        initialize(&db).unwrap();
+        let all = query(
+            &db,
+            &Filter {
+                page_size: 50,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(all.total, 7);
+        for event in all.rows {
+            if event.provider == provider && event.channel == channel {
+                assert_eq!(event.category, "网络");
+                assert_eq!(
+                    event.operation,
+                    definition(provider, &channel, event.event_id)
+                        .unwrap()
+                        .title
+                );
+            } else {
+                assert_eq!(event.category, "其他");
+                assert_eq!(event.operation, "未收录释义");
+            }
+            let detail = detail(&db, event.id).unwrap();
+            assert!(event.bookmarked);
+            assert_eq!(detail.xml, "<Event/>");
+            assert_eq!(event.summary, "original summary");
+        }
+        assert_eq!(stats(&db).unwrap().bookmarks, 7);
+        std::fs::remove_file(db).unwrap();
+    }
     #[test]
     fn unloading_source_removes_only_its_events_and_allows_reimport() {
         let folder = std::env::temp_dir().join(format!(

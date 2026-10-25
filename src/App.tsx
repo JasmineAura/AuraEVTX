@@ -764,7 +764,7 @@ export default function App() {
             onClick={() => navigate("settings")}
           >
             <Settings2 size={17} />
-            外观与设置<span>v0.3.2</span>
+            外观与设置<span>v0.3.3</span>
           </button>
         </div>
       </aside>
@@ -1984,7 +1984,7 @@ export default function App() {
                 <div className="about-mark">
                   A<span>/</span>
                 </div>
-                <span className="eyebrow">AURA EVTX / 0.3.2</span>
+                <span className="eyebrow">AURA EVTX / 0.3.3</span>
                 <h3>
                   每一条日志，
                   <br />
