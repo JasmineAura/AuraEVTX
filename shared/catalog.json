@@ -453,10 +453,10 @@
     "provider": "Microsoft-Windows-Security-Auditing",
     "channel": "Security",
     "id": 4719,
-    "title": "系统审计策略变更",
+    "title": "系统审核策略变更",
     "category": "审计",
-    "description": "记录系统审计策略更改。",
-    "source": "https://learn.microsoft.com/windows/security/threat-protection/auditing/advanced-security-auditing-faq"
+    "description": "系统审核（审计）策略发生变化。核对 SubjectUserName、SubjectDomainName、SubjectLogonId、CategoryId、SubcategoryId、SubcategoryGuid 与 AuditPolicyChanges，区分成功或失败审核的启用和移除，并结合操作主体判断变更原因。",
+    "source": "https://learn.microsoft.com/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4719"
   },
   {
     "provider": "Microsoft-Windows-Security-Auditing",

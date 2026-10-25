@@ -219,7 +219,12 @@ add(
     [4700, "计划任务启用", "持久化", "记录计划任务启用。"],
     [4701, "计划任务禁用", "持久化", "记录计划任务禁用。"],
     [4702, "计划任务更新", "持久化", "记录计划任务配置更新。"],
-    [4719, "系统审计策略变更", "审计", "记录系统审计策略更改。"],
+    [
+      4719,
+      "系统审核策略变更",
+      "审计",
+      "系统审核（审计）策略发生变化。核对 SubjectUserName、SubjectDomainName、SubjectLogonId、CategoryId、SubcategoryId、SubcategoryGuid 与 AuditPolicyChanges，区分成功或失败审核的启用和移除，并结合操作主体判断变更原因。",
+    ],
     [4720, "用户账户创建", "账户", "创建用户账户。"],
     [4722, "用户账户启用", "账户", "启用用户账户。"],
     [4723, "尝试修改账户密码", "账户", "用户尝试更改账户密码。"],
@@ -565,6 +570,12 @@ for (const [id, title, description, page] of [
 
 // Security log clear / loss events belong to Eventlog, not Security-Auditing.
 for (const entry of entries) {
+  if (
+    entry.provider === "Microsoft-Windows-Security-Auditing" &&
+    entry.id === 4719
+  )
+    entry.source =
+      "https://learn.microsoft.com/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4719";
   if (
     entry.provider === "Microsoft-Windows-Security-Auditing" &&
     [1100, 1101, 1102].includes(entry.id)

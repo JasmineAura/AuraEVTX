@@ -1,6 +1,131 @@
 import { test, expect } from "@playwright/test";
 import { buildRecords } from "./support/records.mjs";
 
+test("all categories remain accessible and ID search can escape unrelated filters", async ({
+  page,
+  context,
+}) => {
+  const base = buildRecords()[0];
+  const categories = [
+    "文件",
+    "进程",
+    "网络",
+    "登录",
+    "账户",
+    "权限",
+    "持久化",
+    "脚本",
+    "审计",
+    "其他",
+  ];
+  const records = categories.map((category, i) => ({
+    ...base,
+    id: i + 1,
+    event_id:
+      category === "审计" ? 4719 : category === "其他" ? 65001 : 8000 + i,
+    category,
+    provider:
+      category === "审计"
+        ? "Microsoft-Windows-Security-Auditing"
+        : "CustomProvider",
+    channel: category === "审计" ? "Security" : "CustomChannel",
+    operation: category === "审计" ? "系统审核策略变更" : "未收录释义",
+    summary: "opaque",
+    fields: { Note: "opaque" },
+    xml: "<Event/>",
+  }));
+  await context.addInitScript((records) => {
+    (window as any).__AURA_TEST_RECORDS__ = records;
+  }, records);
+  await context.route("**/src/api.ts*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: 'export {api,native,streamWindow} from "/tests/support/browser-api.mjs";',
+    }),
+  );
+  await page.goto("/?window=events");
+  await page.setViewportSize({ width: 1060, height: 720 });
+  await expect(page.locator(".category-tabs button")).toHaveCount(11);
+  for (const category of categories)
+    await expect(
+      page
+        .locator(".category-tabs")
+        .getByRole("button", { name: new RegExp(`^${category}`) }),
+    ).toBeVisible();
+  await page
+    .locator(".category-tabs")
+    .getByRole("button", { name: /^审计/ })
+    .click();
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await expect(page.locator("tbody tr")).toContainText("4719");
+  const search = page.getByRole("textbox", { name: "搜索事件", exact: true });
+  await search.fill("65001");
+  await expect(page.getByText("未找到匹配事件", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: "在全部日志中搜索", exact: true })
+    .click();
+  await expect(search).toHaveValue("65001");
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await expect(page.locator("tbody tr")).toContainText("65001");
+  await search.fill(" 4719 ");
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await expect(page.locator("tbody tr")).toContainText("系统审核策略变更");
+  await search.fill("id:4719");
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await search.fill("CustomChannel");
+  await expect(page.locator("tbody tr")).toHaveCount(9);
+  await search.fill("");
+  await page
+    .locator(".category-tabs")
+    .getByRole("button", { name: /^其他/ })
+    .click();
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await expect(page.locator("tbody tr")).toContainText("65001");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    1060,
+  );
+  const atlas = await context.newPage();
+  await atlas.goto("/?view=catalog");
+  await atlas.getByRole("textbox", { name: "搜索事件图鉴" }).fill("4719");
+  await expect(atlas.locator(".definition-card")).toHaveCount(1);
+  await expect(atlas.locator(".definition-card")).toContainText(
+    "系统审核策略变更",
+  );
+  await expect(atlas.locator(".definition-card")).toContainText(
+    "AuditPolicyChanges",
+  );
+});
+
+test("removing the last bookmark on a page returns to a populated page", async ({
+  page,
+  context,
+}) => {
+  const records = buildRecords();
+  await context.addInitScript((records) => {
+    (window as any).__AURA_TEST_RECORDS__ = records;
+    localStorage.setItem(
+      "aura-test-bookmarks",
+      JSON.stringify(records.slice(0, 51).map((e) => e.id)),
+    );
+  }, records);
+  await context.route("**/src/api.ts*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: 'export {api,native,streamWindow} from "/tests/support/browser-api.mjs";',
+    }),
+  );
+  await page.goto(
+    "/?window=events&filter=" +
+      encodeURIComponent(JSON.stringify({ bookmarked: true })),
+  );
+  await expect(page.locator("tbody tr")).toHaveCount(50);
+  await page.getByRole("button", { name: "下一页", exact: true }).click();
+  await expect(page.locator("tbody tr")).toHaveCount(1);
+  await page.getByRole("button", { name: "取消收藏", exact: true }).click();
+  await expect(page.locator("tbody tr")).toHaveCount(50);
+  await expect(page.locator(".pagination")).toContainText("1–50");
+});
+
 test("firewall atlas exposes the five provider-scoped event meanings", async ({
   page,
 }) => {

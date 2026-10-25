@@ -19,11 +19,29 @@ const group = (values) =>
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 function filtered(f) {
+  const text = (f.search || "").trim();
+  const match = /^(?:id|eventid):\s*(\d+)$/i.exec(text);
+  const exactId =
+    match && Number(match[1]) <= 4294967295 ? Number(match[1]) : null;
   return activeRecords()
     .filter(
       (e) =>
-        (!f.search ||
-          JSON.stringify(e).toLowerCase().includes(f.search.toLowerCase())) &&
+        (!text ||
+          (exactId !== null
+            ? e.event_id === exactId
+            : [
+                e.summary,
+                JSON.stringify(e.fields),
+                e.xml,
+                e.operation,
+                e.computer,
+                e.provider,
+                String(e.event_id),
+                e.channel,
+                e.category,
+              ].some((value) =>
+                String(value).toLowerCase().includes(text.toLowerCase()),
+              ))) &&
         (!f.provider || e.provider === f.provider) &&
         (f.event_id === null || e.event_id === f.event_id) &&
         (f.level === null || e.level === f.level) &&

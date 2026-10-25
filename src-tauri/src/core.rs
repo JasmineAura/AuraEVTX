@@ -59,6 +59,7 @@ pub fn initialize(path: &Path) -> Result<()> {
         CREATE INDEX IF NOT EXISTS idx_events_time ON events(time);
         CREATE INDEX IF NOT EXISTS idx_events_type ON events(provider,channel,event_id);
         CREATE INDEX IF NOT EXISTS idx_events_file ON events(file_id);
+        CREATE INDEX IF NOT EXISTS idx_events_event_id ON events(event_id);
         CREATE INDEX IF NOT EXISTS idx_events_bookmark ON events(bookmarked);
         CREATE TABLE IF NOT EXISTS workspace_metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);").map_err(err)?;
     refresh_catalog(&mut conn)
@@ -147,16 +148,27 @@ pub struct Filter {
 fn conditions(f: &Filter) -> (String, Vec<Value>) {
     let mut sql = String::from(" WHERE 1=1");
     let mut args = vec![];
-    if !f.search.is_empty() {
-        sql.push_str(" AND (e.summary LIKE ? ESCAPE '\\' OR e.fields LIKE ? ESCAPE '\\' OR e.xml LIKE ? ESCAPE '\\' OR e.operation LIKE ? ESCAPE '\\' OR e.computer LIKE ? ESCAPE '\\' OR e.provider LIKE ? ESCAPE '\\')");
+    let search = f.search.trim();
+    let normalized = search.to_ascii_lowercase();
+    let exact_id = normalized
+        .strip_prefix("id:")
+        .or_else(|| normalized.strip_prefix("eventid:"))
+        .map(str::trim)
+        .filter(|value| !value.is_empty() && value.bytes().all(|c| c.is_ascii_digit()))
+        .and_then(|value| value.parse::<u32>().ok());
+    if let Some(id) = exact_id {
+        sql.push_str(" AND e.event_id=?");
+        args.push(Value::Integer(id.into()));
+    } else if !search.is_empty() {
+        sql.push_str(" AND (e.summary LIKE ? ESCAPE '\\' OR e.fields LIKE ? ESCAPE '\\' OR e.xml LIKE ? ESCAPE '\\' OR e.operation LIKE ? ESCAPE '\\' OR e.computer LIKE ? ESCAPE '\\' OR e.provider LIKE ? ESCAPE '\\' OR CAST(e.event_id AS TEXT) LIKE ? ESCAPE '\\' OR e.channel LIKE ? ESCAPE '\\' OR e.category LIKE ? ESCAPE '\\')");
         let text = format!(
             "%{}%",
-            f.search
+            search
                 .replace('\\', "\\\\")
                 .replace('%', "\\%")
                 .replace('_', "\\_")
         );
-        for _ in 0..6 {
+        for _ in 0..9 {
             args.push(Value::Text(text.clone()));
         }
     }
@@ -511,6 +523,19 @@ pub fn parse_xml(xml: &str, fallback_id: u64) -> Result<Parsed> {
             "ModifyingApplication",
             "Store Type",
         ]
+    } else if provider.eq_ignore_ascii_case("Microsoft-Windows-Security-Auditing")
+        && channel.eq_ignore_ascii_case("Security")
+        && event_id == 4719
+    {
+        &[
+            "SubjectUserName",
+            "SubjectDomainName",
+            "SubjectLogonId",
+            "CategoryId",
+            "SubcategoryId",
+            "SubcategoryGuid",
+            "AuditPolicyChanges",
+        ]
     } else {
         &[
             "Image",
@@ -829,6 +854,96 @@ pub fn export(path: &Path, filter: &Filter, output: &Path) -> Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn event_id_search_is_independent_of_payload_and_preserves_filters_and_csv() {
+        let db = std::env::temp_dir().join(format!(
+            "aura-search-{}-{}.db",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        initialize(&db).unwrap();
+        {
+            let conn = connect(&db).unwrap();
+            conn.execute("INSERT INTO files(id,name,path,hash,count) VALUES(1,'events.evtx','events.evtx','search-hash',4)",[]).unwrap();
+            for (id, event_id, category, fields, summary) in [
+                (1, 4719, "审计", "{}", "opaque"),
+                (2, 4624, "登录", r#"{"Note":"4719"}"#, "opaque"),
+                (3, 14719, "其他", "{}", "opaque"),
+                (4, 65001, "其他", "{}", r"literal %_\ marker"),
+            ] {
+                conn.execute("INSERT INTO events(id,file_id,record_id,event_id,provider,channel,computer,time,level,operation,category,summary,fields,xml,bookmarked) VALUES(?,1,1,?,'Provider','CustomChannel','host','2026-10-25T00:00:00Z',4,'operation',?,?,?,'<Event/>',0)",params![id,event_id,category,summary,fields]).unwrap();
+            }
+        }
+        let find = |text: &str| {
+            query(
+                &db,
+                &Filter {
+                    search: text.into(),
+                    page_size: 50,
+                    ..Default::default()
+                },
+            )
+            .unwrap()
+        };
+        assert_eq!(find("4719").total, 3);
+        for text in ["id:4719", " ID: 4719 ", "eventid:04719"] {
+            let found = find(text);
+            assert_eq!(found.total, 1);
+            assert_eq!(found.rows[0].event_id, 4719);
+        }
+        assert_eq!(find("65001").rows[0].category, "其他");
+        assert_eq!(find("审计").total, 1);
+        assert_eq!(find("CustomChannel").total, 4);
+        assert_eq!(find(r"%_\").total, 1);
+        assert_eq!(find("' OR 1=1 --").total, 0);
+        assert_eq!(find("id:4294967296").total, 0);
+        assert_eq!(find("   ").total, 4);
+        assert_eq!(
+            query(
+                &db,
+                &Filter {
+                    search: "id:4719".into(),
+                    category: "登录".into(),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .total,
+            0
+        );
+        let csv = db.with_extension("csv");
+        assert_eq!(
+            export(
+                &db,
+                &Filter {
+                    search: "id:4719".into(),
+                    ..Default::default()
+                },
+                &csv
+            )
+            .unwrap(),
+            1
+        );
+        let text = std::fs::read_to_string(&csv).unwrap();
+        assert!(text.contains(",4719,"));
+        assert!(!text.contains(",14719,"));
+        std::fs::remove_file(csv).unwrap();
+        std::fs::remove_file(db).unwrap();
+    }
+    #[test]
+    fn audit_policy_4719_has_correct_scope_and_searchable_change_summary() {
+        let event=parse_xml(r#"<Event><System><Provider Name="Microsoft-Windows-Security-Auditing"/><EventID>4719</EventID><Channel>Security</Channel><TimeCreated SystemTime="2026-10-25T00:00:00Z"/></System><EventData><Data Name="SubjectUserName">admin</Data><Data Name="SubjectDomainName">LAB</Data><Data Name="SubjectLogonId">0x3e7</Data><Data Name="CategoryId">%%8274</Data><Data Name="SubcategoryId">%%12807</Data><Data Name="SubcategoryGuid">{example}</Data><Data Name="AuditPolicyChanges">%%8448, %%8450</Data></EventData></Event>"#,1).unwrap();
+        assert_eq!(event.operation, "系统审核策略变更");
+        assert_eq!(event.category, "审计");
+        assert!(event.summary.contains("SubjectUserName: admin"));
+        assert!(event.summary.contains("AuditPolicyChanges: %%8448, %%8450"));
+        assert_eq!(event.fields["SubcategoryGuid"], "{example}");
+        assert!(definition("OtherProvider", "Security", 4719).is_none());
+        assert!(definition("Microsoft-Windows-Security-Auditing", "System", 4719).is_none());
+    }
     #[test]
     fn firewall_catalog_parses_scoped_ids_and_upgrades_existing_labels() {
         let provider = "Microsoft-Windows-Windows Firewall With Advanced Security";

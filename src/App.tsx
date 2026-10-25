@@ -376,7 +376,16 @@ export default function App() {
     setLoading(true);
     api<Page>("query_events", { filter: activeFilter })
       .then((p) => {
-        if (live) setPage(p);
+        if (!live) return;
+        const lastPage = Math.max(
+          0,
+          Math.ceil(p.total / activeFilter.page_size) - 1,
+        );
+        if (activeFilter.page > lastPage) {
+          setFilter((current) => ({ ...current, page: lastPage }));
+          return;
+        }
+        setPage(p);
       })
       .catch((e) => {
         if (live) setError(String(e));
@@ -607,7 +616,7 @@ export default function App() {
         (!catalogProvider || d.provider === catalogProvider) &&
         (!onlyPresent || d.count > 0) &&
         (!catalogSearch ||
-          `${d.id} ${d.title} ${d.category} ${d.provider} ${d.description}`
+          `${d.id} ${d.title} ${d.category} ${d.provider} ${d.channel} ${d.description}`
             .toLowerCase()
             .includes(catalogSearch.toLowerCase())),
     );
@@ -764,7 +773,7 @@ export default function App() {
             onClick={() => navigate("settings")}
           >
             <Settings2 size={17} />
-            外观与设置<span>v0.3.3</span>
+            外观与设置<span>v0.3.4</span>
           </button>
         </div>
       </aside>
@@ -1072,7 +1081,8 @@ export default function App() {
                     <input
                       ref={searchRef}
                       aria-label="搜索事件"
-                      placeholder="搜索进程、IP、用户、路径或任意字段…"
+                      placeholder="搜索事件 ID、进程、IP 或字段；id:4719 精确查找…"
+                      title="输入事件 ID 或文本搜索；id:4719 按事件 ID 精确匹配。搜索会同时应用当前筛选条件。"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                     />
@@ -1106,7 +1116,7 @@ export default function App() {
                   >
                     全部事件
                   </button>
-                  {stats.categories.slice(0, 6).map((c) => (
+                  {stats.categories.map((c) => (
                     <button
                       key={c.name}
                       className={filter.category === c.name ? "active" : ""}
@@ -1326,6 +1336,25 @@ export default function App() {
                           ? "调整筛选条件，或点击事件旁的书签保存证据。"
                           : "拖入任意提供者的 EVTX，或导入整个目录。"}
                       </p>
+                      {stats.total > 0 &&
+                        (filterCount > 0 || view === "bookmarks") && (
+                          <button
+                            className="primary-button"
+                            onClick={() => {
+                              setView("events");
+                              setSearch(search.trim());
+                              setFilter({
+                                ...initialFilter,
+                                search: search.trim(),
+                              });
+                            }}
+                          >
+                            <Search size={16} />
+                            {search.trim()
+                              ? "在全部日志中搜索"
+                              : "查看全部日志"}
+                          </button>
+                        )}
                       <button
                         className="primary-button"
                         onClick={() => (stats.total ? reset() : chooseFiles())}
@@ -1984,7 +2013,7 @@ export default function App() {
                 <div className="about-mark">
                   A<span>/</span>
                 </div>
-                <span className="eyebrow">AURA EVTX / 0.3.3</span>
+                <span className="eyebrow">AURA EVTX / 0.3.4</span>
                 <h3>
                   每一条日志，
                   <br />
